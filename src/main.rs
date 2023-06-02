@@ -1,15 +1,11 @@
 use std::net::{IpAddr, Ipv4Addr};
-use std::thread;
-use futures::executor::block_on;
 
 #[tokio::main]
 async fn main() {
-    let conn = sqlite::open("database.db")
-        .unwrap();
     let mut ip: u32 = 1;
     while ip > 0 {
         let ip_addr = get_ip(&ip);
-        thread::spawn(move || block_on(scan_ip(ip_addr)));
+        tokio::spawn(scan_ip(ip_addr));
         ip += 1;
     }
 }
@@ -18,8 +14,12 @@ async fn scan_ip(ip: IpAddr) -> bool {
     match surge_ping::ping(ip, &[])
         .await {
         Ok(_) => {},
-        Err(_) => return false,
+        Err(_) => {
+            //println!("{}: false", ip.to_string());
+            return false;
+        },
     }
+    println!("{}", ip.to_string());
     true
 }
 
