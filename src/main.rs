@@ -4,8 +4,10 @@ use std::net::{IpAddr, Ipv4Addr};
 async fn main() {
     let mut ip: u32 = 1;
     while ip > 0 {
-        let ip_addr = get_ip(&ip);
-        tokio::spawn(scan_ip(ip_addr));
+        if ip >> 24 != 0x7f {
+            let ip_addr = get_ip(&ip);
+            tokio::spawn(scan_ip(ip_addr));
+        }
         ip += 1;
     }
 }
@@ -13,7 +15,7 @@ async fn main() {
 async fn scan_ip(ip: IpAddr) -> bool {
     match surge_ping::ping(ip, &[])
         .await {
-        Ok(_) => {},
+        Ok(_) => (),
         Err(_) => {
             //println!("{}: false", ip.to_string());
             return false;
